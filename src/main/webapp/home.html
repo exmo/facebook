@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="https://www.facebook.com/2008/fbml">
+<head>
+<title>.:: Exmo/Quiz ::.</title>
+	<script type="text/javascript" src="js/jquery-1.9.0.min.js"></script>
+	<script type="text/javascript" src="js/facebook.all.js"></script>
+</head>
+
+<body>
+Login page...
+
+<div id="fb-root"></div>
+  <script>
+
+	var APP_ID = '229599823842254';
+	var FIRST_PAGE = document.URL;
+  
+    $(function(){
+      FB.init({ apiKey: APP_ID,
+        channelUrl : '//facebook-exmo.rhcloud.com/channel.html',
+        status     : true, // check login status
+        cookie     : true, // enable cookies to allow the server to access the session
+        xfbml      : true,  // parse XFBML
+        frictionlessRequests: true
+        });
+      FB.getLoginStatus(function(response) {
+    	  if (response.status === 'connected') {
+              var uid = response.authResponse.userID;
+              var accessToken = response.authResponse.accessToken;
+              console.log('connected and allowed');
+          } else if (response.status === 'not_authorized') {
+              console.log('connected but not allowed');
+              top.location.href = "https://www.facebook.com/dialog/oauth?client_id="+APP_ID+"&redirect_uri="+FIRST_PAGE+"&scope=user_photos,publish_actions";
+          } else {
+              console.log('isnt even logged in to Facebook');
+              top.location.href = "https://www.facebook.com/dialog/oauth?client_id="+APP_ID+"&redirect_uri="+FIRST_PAGE+"+&scope=user_photos,publish_actions";
+          }
+      });
+    });
+  </script>
+
+
+</body>
+
+
+
+</html>

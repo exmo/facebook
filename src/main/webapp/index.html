@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="https://www.facebook.com/2008/fbml">
+<head>
+<title>.:: Exmo/Quiz ::.</title>
+	<script type="text/javascript" src="js/jquery-1.9.0.min.js"></script>
+	<script type="text/javascript" src="js/facebook.all.js"></script>
+	<link rel="stylesheet" href="css/default.css" type="text/css" />
+</head>
+
+<header id="banner" class="body"> 
+	<h1 align="center">
+		<img src="images/logo_inicial.png" alt="eQu?Zmo" width="300px" height="63px"/>
+	</h1>
+</header>
+
+<body>
+
+<p id="jogar" align="center">
+	<img src="images/botao_jogar.png" width="300px" height="40px" id="dagger" />
+</p>
+
+<div id="jogador">
+	<table>
+		<tr>
+			<td><h4 id="nome">nome</h4></td>
+		    <td><h4 id="pontos">###</h4></td>
+		</tr>
+	</table>
+</div>
+
+<div id="ranking">
+	<h2>Ranking</h2>
+	<table>
+		<tr>
+			<td><h4 id="posicao">#</h4></td>
+		    <td><h4 id="nomeDoJogador">nome</h4></td>
+		    <td><h4 id="score">###</h4></td>
+		</tr>
+	</table>
+</div>
+
+<div id="fb-root"></div>
+  <script>
+
+	var APP_ID = '229599823842254';
+	var FIRST_PAGE = 'https://apps.facebook.com/equizmo/';
+	var uid = '';
+    var accessToken = '';
+	var email ='teste@email.com';
+	var nome ='';;
+	var longitude=10;
+	var latitude=10;
+	  
+    $(function(){
+      FB.init({ apiKey: APP_ID,
+        channelUrl : 'http://quiz-exmo.rhcloud.com/facebook/channel.html',
+        status     : true, // check login status
+        cookie     : true, // enable cookies to allow the server to access the session
+        xfbml      : true,  // parse XFBML
+        frictionlessRequests: true
+        });
+      FB.getLoginStatus(function(response) {
+    	  console.log(response);
+    	  if (response.status === 'connected') {
+              uid = response.authResponse.userID;
+              accessToken = response.authResponse.accessToken;
+
+              userInfo();
+              
+              console.log('connected and allowed');
+          } else if (response.status === 'not_authorized') {
+              console.log('connected but not allowed');
+              top.location.href = "https://www.facebook.com/dialog/oauth?client_id="+APP_ID+"&redirect_uri="+FIRST_PAGE+"&scope=email, user_about_me, publish_stream, publish_actions, manage_notifications";
+          } else {
+              console.log('isnt even logged in to Facebook');
+              top.location.href = "https://www.facebook.com/dialog/oauth?client_id="+APP_ID+"&redirect_uri="+FIRST_PAGE+"+&scope=email, user_about_me, publish_stream, publish_actions, manage_notifications";
+          }
+      });
+    });
+
+    function userInfo(){
+    	console.log('Getting user info ('+uid+') and allowed');
+        FB.api('/'+uid, function(r) {
+        	console.log(r);
+        	name = r.name;
+        	//email = r.email;
+        	
+			$("#nome").text(name);	
+
+			loginOnQuiz();			           
+		});
+		
+    }
+
+    function loginOnQuiz(){
+		var soapMessage = "";
+		soapMessage+="<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:web=\"http://webservice/\">";
+		soapMessage+="<soapenv:Header></soapenv:Header>";
+		soapMessage+="<soapenv:Body>"
+		soapMessage+="  <web:login>";
+		soapMessage+="    <name>"+name+"</name>";
+		soapMessage+="    <email>"+email+"</email>";
+		soapMessage+="    <latitude>"+latitude+"</latitude>";
+		soapMessage+="    <longitude>"+longitude+"</longitude>";
+		soapMessage+="  </web:login>";
+		soapMessage+="</soapenv:Body>";
+		soapMessage+="</soapenv:Envelope>";
+
+		console.log(soapMessage);
+		$.ajax({
+			url: "https://quiz-exmo.rhcloud.com/user",
+			type: "POST",
+			dataType: "xml",
+			data: soapMessage,
+			complete: function(xmlHttpRequest, status){
+				console.log(xmlHttpRequest);
+				console.log(status);
+				$(xmlHttpRequest.responseXML)
+				    .find('return')
+				    .each(function(){
+				    	$("#pontos").text(this.text());
+				 	}
+				 );
+			},
+			SOAPAction: "login",
+			contentType: "text/xml; charset=\"utf-8\""
+		});
+    }
+    
+  </script>
+
+
+</body>
+
+<footer>
+<p>desenvolvido por <a href="http://exmo.github.com">eXmo</a>.</p>
+</footer>
+
+
+</html>
